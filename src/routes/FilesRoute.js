@@ -11,19 +11,57 @@ const storage = multer.diskStorage({
     cb(null, "public/file");
   },
   filename: (req, file, cb) => {
-    // console.log(Date.now() + file.originalname, "=== from storage ")
     cb(null, Date.now() + file.originalname);
   },
 });
 const uplode = multer({ storage: storage });
 
-router.post("/file", uplode.single("file"), async (req, res) => {
-  // console.log(req.body.title,'req.body', req.body.author, "author")
-  // console.log(req.file.mimetype,'req.file')
-  // console.log('working auth complit')
-  // res.send({m:"workingg auth"})
+// delete
+
+router.delete("/file/:id", async (req, res) => {
   try {
-    // console.log('public/file/' + req.file.filename, "===== uplode tyr block")
+    const items = await FileModel.deleteOne({ _id: req.params.id });
+    res.status(202).json({
+      arrlength: items.length,
+      items,
+    });
+  } catch (error) {
+    res.status(400).send("Error while downloading file. Try again later.");
+  }
+});
+
+//rename
+
+router.put("/file/:id", async (req, res) => {
+  try {
+    const items = await FileModel.updateOne(
+      { _id: req.params.id },
+      { $set: { title: req.body.title } }
+    );
+    res.status(200).json({
+      arrlength: items.length,
+      items,
+    });
+  } catch (error) {
+    res.status(400).send("Error while downloading file. Try again later.");
+  }
+});
+
+//getAll data
+router.get("/file", async (req, res) => {
+  try {
+    const items = await FileModel.find({ user: req.userID });
+    res.json({
+      arrlength: items.length,
+      items,
+    });
+  } catch (error) {
+    res.status(400).send("Error while downloading file. Try again later.");
+  }
+});
+
+router.post("/file", uplode.single("file"), async (req, res) => {
+  try {
     const file = await FileModel.create({
       title: req.body.title,
       author: req.body.author,
@@ -51,40 +89,14 @@ router.post("/file", uplode.single("file"), async (req, res) => {
 });
 
 router.get("/file/:id", async (req, res) => {
-  console.log("working");
-  // let data = await FileModel.findById({_id:req.params.id}) //findById
-  //   // ,(err,data)=>{}
-  //   // if(err){
-  //   //   console.log(err)
-  //   // }else{
-  //   //   console.log(data)
-  //   //   var x = __dirname + '/public/' + data[0]
-  //   // }}
-  //   // )
-  //   console.log(data.__proto__)
-  //   res.attachment("firstfile")
-  //     // data.downloadStream(res)
-  //     // data.d
-  // res.send({
-  //   data
-  // })
-  // Router.get('/file/:id', async (req, res) => {
   try {
     const item = await FileModel.findById({ _id: req.params.id });
-    // console.log(file);
-    // res.set({
-    //   "Content-Type": file.mimetype,
-    // });
-    // res.send({ file });
     const file = item.FileUrl;
     const filePath = path.join(__dirname, `../../${file}`);
     res.download(filePath);
-
-    // res.sendFile(path.join(__dirname, "..", file.path));
   } catch (error) {
     res.status(400).send("Error while downloading file. Try again later.");
   }
 });
-// })
 
 module.exports = router;
