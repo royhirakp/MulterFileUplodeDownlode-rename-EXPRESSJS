@@ -74,13 +74,12 @@ router.post("/file", uplode.single("file"), async (req, res) => {
       },
       user: req.userID,
     });
-    console.log("type 2");
     res.json({
       status: "sucsess",
       file,
     });
   } catch (error) {
-    console.log("type 3 error ");
+    // console.log("type 3 error ");
     res.status(500).json({
       status: "error",
       messege: error.messege,
@@ -88,7 +87,7 @@ router.post("/file", uplode.single("file"), async (req, res) => {
   }
 });
 
-router.get("/file/:id", async (req, res) => {
+router.get("/file/downlode/:id", async (req, res) => {
   try {
     const item = await FileModel.findById({ _id: req.params.id });
     const file = item.FileUrl;
